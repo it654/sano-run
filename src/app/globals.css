@@ -1,26 +1,58 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+  }
+
+  body {
+    background-color: #f3f4f6; /* Nền xám nhạt */
+    color: #1f2937; /* Màu chữ mặc định */
+    font-family: var(--font-roboto), sans-serif; /* Sử dụng Roboto */
+    scroll-behavior: smooth;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* --- Styles cho Nội dung Rich Text (bê từ demo sang) --- */
+@layer components {
+  .content-richtext h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e3a8a; /* Blue 900 */
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    border-left: 4px solid #dc2626; /* Red 600 */
+    padding-left: 0.5rem;
+  }
+  .content-richtext p {
+    margin-bottom: 1rem;
+    color: #374151; /* Gray 700 */
+    line-height: 1.6;
+  }
+  .content-richtext ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+    color: #374151;
+  }
+  .content-richtext li {
+    margin-bottom: 0.5rem;
+  }
+}
+/* --- Hỗ trợ UI: Ẩn scrollbar --- */
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.format-html, 
+.format-html * {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  max-width: 100%;
 }

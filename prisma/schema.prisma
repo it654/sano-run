@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql" // Đã chuyển sang MySQL
+}
+
+// ------------------------------------------------------
+// ENUMS (Các tập giá trị cố định)
+// ------------------------------------------------------
+
+enum EventStatus {
+  UPCOMING  // Sắp diễn ra
+  OPEN      // Đang mở đăng ký
+  DOING     // Đang diễn ra
+  CLOSED    // Đã đóng đăng ký / Đã kết thúc
+}
+
+enum ShirtSize {
+  XS
+  S
+  M
+  L
+  XL
+  XXL
+}
+
+// ------------------------------------------------------
+// MODELS (Bảng dữ liệu)
+// ------------------------------------------------------
+
+model Event {
+  id                   String        @id @default(cuid())
+  title                String        // Tên giải chạy
+  banner               String?       @db.Text // Dùng Text cho MySQL phòng trường hợp URL ảnh quá dài
+  location             String        // Địa điểm tổ chức
+  date                 DateTime      // Ngày diễn ra sự kiện
+  registrationDeadline DateTime      // Hạn chót đăng ký
+  status               EventStatus   @default(UPCOMING) 
+  distances            String        // Lưu các cự ly cho phép (Ví dụ: "5km, 10km, 21km")
+  description          String?       @db.Text
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  prizes               String?        @db.Text // Dùng cho tab Giải thưởng
+  rules                String?        @db.Text // Dùng cho tab Điều lệ
+  registrations        Registration[]
+}
+
+model Registration {
+  id            String     @id @default(cuid())
+  userId        String
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId       String
+  event         Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  fullName      String?    
+  // ĐÃ XÓA DÒNG employeeId Ở ĐÂY
+  department    String?    
+  distance      String?    
+  
+  bibNumber     String     @unique 
+  totalDistance Float      @default(0.0) 
+  
+  activities    Activity[]
+}
+
+// Cập nhật bảng User cho chuẩn với NextAuth
+model User {
+  id            String    @id @default(cuid())
+  name          String?   // NextAuth dùng 'name' thay vì 'fullName'
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?   // NextAuth dùng 'image' thay vì 'avatar'
+  
+  accounts      Account[]
+  sessions      Session[]
+  
+  // Quan hệ với giải chạy của bạn (giữ nguyên)
+  registrations Registration[]
+}
+
+// BẢNG BẮT BUỘC CỦA NEXTAUTH: Lưu thông tin liên kết Google
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+// BẢNG BẮT BUỘC CỦA NEXTAUTH: Quản lý phiên đăng nhập
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Bảng lưu từng buổi chạy (bằng chứng) của người dùng
+model Activity {
+  id             String       @id @default(cuid())
+  
+  // Liên kết với đơn đăng ký giải chạy nào
+  registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  
+  distance       Float        // Số km chạy được
+  proofImage     String       // Link ảnh chụp màn hình Strava/Garmin
+  runDate        DateTime     @default(now()) // Ngày chạy
+  status         String       @default("PENDING") // Trạng thái: PENDING (Chờ duyệt), APPROVED (Đã duyệt), REJECTED (Từ chối)
+  
+  createdAt      DateTime     @default(now())
+}

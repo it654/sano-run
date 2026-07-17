@@ -1,65 +1,198 @@
-import Image from "next/image";
+// src/app/page.tsx
+'use client'; 
+
+import Navbar from '@/components/layout/Navbar';
+import EventCard from '@/components/events/EventCard';
+import { useEffect, useState } from 'react';
+import Link from 'next/link'; // Thêm import Link
 
 export default function Home() {
+  const [events, setEvents] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/events');
+        if (response.ok) {
+          const data = await response.json();
+          setEvents(data);
+        } else {
+          console.error('Lỗi khi tải danh sách giải chạy');
+        }
+      } catch (error) {
+        console.error('Fetch events error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  const openEvents = events.filter(e => e.status === 'OPEN');
+  const upcomingEvents = events.filter(e => e.status === 'UPCOMING');
+  const closedEvents = events.filter(e => e.status === 'CLOSED');
+const doingEvents = events.filter(e => e.status === 'DOING');
+  const featuredEvent = openEvents.length > 0 ? openEvents[0] : events[0];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <div className="min-h-screen flex flex-col bg-[#f3f4f6]">
+      <Navbar />
+      
+      <main className="flex-grow">
+        {/* HERO BANNER FULL-WIDTH */}
+        {featuredEvent && (
+          <div className="w-full h-[300px] md:h-[450px] bg-gray-900 relative">
+            <img 
+              src={featuredEvent.banner || featuredEvent.bannerUrl || "https://images.unsplash.com/photo-1552674605-15c37127ea96?auto=format&fit=crop&q=80&w=1920"} 
+              alt="Hero Banner" 
+              className="w-full h-full object-cover opacity-70"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+            
+            <div className="absolute bottom-0 left-0 w-full">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+                <span className="bg-[#E32626] text-white text-[10px] font-bold px-3 py-1 rounded uppercase tracking-wider mb-3 inline-block">Sự kiện nổi bật</span>
+                <h1 className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-wide text-shadow-lg mb-2">
+                  {featuredEvent.title}
+                </h1>
+                <p className="text-gray-200 font-medium text-lg max-w-2xl mb-6">
+                  Diễn ra vào: {new Date(featuredEvent.date).toLocaleDateString('vi-VN')} tại {featuredEvent.location}
+                </p>
+
+                {/* [MỚI] NÚT CLICK VÀO CHI TIẾT GIẢI NỔI BẬT */}
+                <Link 
+                  href={`/details/${featuredEvent.id}`} 
+                  className="bg-[#E32626] hover:bg-red-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-transform hover:-translate-y-1 inline-block uppercase tracking-wider text-sm"
+                >
+                  Xem chi tiết & Đăng ký
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full space-y-16">
+          
+          {isLoading ? (
+            <div className="text-center py-20 text-gray-500 font-medium">
+              Đang tải danh sách giải chạy...
+            </div>
+          ) : events.length === 0 ? (
+            <div className="text-center py-20 text-gray-500 font-medium">
+              Hiện tại chưa có giải chạy nào được tổ chức.
+            </div>
+          ) : (
+            <>
+              {openEvents.length > 0 && (
+                <section>
+                  <div className="mb-8 pb-2 flex items-center justify-between border-b border-gray-200">
+                    <h2 className="text-2xl font-black uppercase text-[#1e3a8a] border-l-4 border-[#E32626] pl-3 tracking-tight">
+                      Đang mở đăng ký
+                    </h2>
+                    <span className="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">{openEvents.length} giải</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {openEvents.map(event => (
+                      <EventCard 
+                        key={event.id} 
+                        id={event.id}
+                        title={event.title}
+                        date={new Date(event.date).toLocaleDateString('vi-VN')}
+                        location={event.location}
+                        distances={event.distances}
+                        imageUrl={event.banner || event.bannerUrl}
+                        status={event.status as any} 
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
+              {doingEvents.length > 0 && (
+                <section>
+                  <div className="mb-8 pb-2 flex items-center justify-between border-b border-gray-200">
+                    <h2 className="text-2xl font-black uppercase text-[#1e3a8a] border-l-4 border-[#E32626] pl-3 tracking-tight">
+                      Đang diễn ra
+                    </h2>
+                    <span className="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">{doingEvents.length} giải</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {doingEvents.map(event => (
+                      <EventCard 
+                        key={event.id} 
+                        id={event.id}
+                        title={event.title}
+                        date={new Date(event.date).toLocaleDateString('vi-VN')}
+                        location={event.location}
+                        distances={event.distances}
+                        imageUrl={event.banner || event.bannerUrl}
+                        status={event.status as any} 
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {upcomingEvents.length > 0 && (
+                <section>
+                  <div className="mb-8 pb-2 flex items-center justify-between border-b border-gray-200">
+                    <h2 className="text-2xl font-black uppercase text-[#1e3a8a] border-l-4 border-[#E32626] pl-3 tracking-tight">
+                      Sắp diễn ra
+                    </h2>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 opacity-90">
+                    {upcomingEvents.map(event => (
+                      <EventCard 
+                        key={event.id} 
+                        id={event.id}
+                        title={event.title}
+                        date={new Date(event.date).toLocaleDateString('vi-VN')}
+                        location={event.location}
+                        distances={event.distances}
+                        imageUrl={event.banner || event.bannerUrl}
+                        status={event.status as any} 
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {closedEvents.length > 0 && (
+                <section>
+                  <div className="mb-8 pb-2 flex items-center justify-between border-b border-gray-200">
+                    <h2 className="text-2xl font-black uppercase text-gray-500 border-l-4 border-gray-400 pl-3 tracking-tight">
+                      Đã kết thúc
+                    </h2>
+                    <a href="#" className="text-sm font-bold text-[#E32626] hover:underline">Xem tất cả lịch sử →</a>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 opacity-75 grayscale-[30%]">
+                    {closedEvents.map(event => (
+                      <EventCard 
+                        key={event.id} 
+                        id={event.id}
+                        title={event.title}
+                        date={new Date(event.date).toLocaleDateString('vi-VN')}
+                        location={event.location}
+                        distances={event.distances}
+                        imageUrl={event.banner || event.bannerUrl}
+                        status={event.status as any} 
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
+            </>
+          )}
         </div>
       </main>
+      
+      <footer className="border-t border-gray-200 bg-white mt-auto py-6">
+        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500 font-medium">
+            © 2026 SanoRun Nội bộ.
+        </div>
+      </footer>
     </div>
   );
 }
