@@ -7,8 +7,9 @@ import AuthProvider from '@/components/AuthProvider'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'H-Day Run',
+  title: 'SanoRun',
   description: 'Hệ thống giải chạy nội bộ',
+  icons:'icon.png'
 }
 
 export default function RootLayout({
@@ -24,6 +25,11 @@ export default function RootLayout({
           {children}
         </AuthProvider>
       </body>
+      <footer className="border-t border-gray-200 bg-white mt-auto py-6">
+        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500 font-medium">
+            © 2026 SanoRun Nội bộ.
+        </div>
+      </footer>
     </html>
   )
 }

@@ -307,11 +307,6 @@ const isEventClosed = eventData.status === 'CLOSED' || eventData.status === 'DOI
                 </div>
             </main>
 
-            <footer className="border-t bg-white mt-12 py-4">
-                <div className="max-w-7xl mx-auto px-4 text-center text-xs text-gray-500">
-                    © 2026 RunPortal Company Nội bộ. Thiết kế theo phong cách VietRace365.
-                </div>
-            </footer>
 
             <RegistrationModal
                 isOpen={isModalOpen}

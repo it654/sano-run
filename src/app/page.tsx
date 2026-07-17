@@ -188,11 +188,7 @@ const doingEvents = events.filter(e => e.status === 'DOING');
         </div>
       </main>
       
-      <footer className="border-t border-gray-200 bg-white mt-auto py-6">
-        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500 font-medium">
-            © 2026 SanoRun Nội bộ.
-        </div>
-      </footer>
+      
     </div>
   );
 }
