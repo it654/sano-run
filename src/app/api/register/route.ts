@@ -2,14 +2,16 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
-
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { employeeId, fullName, distance, shirtSize, eventId } = body;
+    
+    // 1. Cập nhật biến để hứng dữ liệu cho khớp với Schema mới
+    // (Thay employeeId, shirtSize bằng userId, department)
+    const { userId, fullName, department, distance, eventId } = body;
 
-    // 1. Validate dữ liệu cơ bản
-    if (!employeeId || !fullName || !distance || !shirtSize || !eventId) {
+    // Validate dữ liệu cơ bản
+    if (!userId || !fullName || !distance || !eventId) {
       return NextResponse.json(
         { error: 'Vui lòng điền đầy đủ thông tin bắt buộc!' },
         { status: 400 }
@@ -28,31 +30,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Giải chạy này đã đóng đăng ký!' }, { status: 400 });
     }
 
-    // 3. Kiểm tra xem nhân viên đã đăng ký giải này chưa
-    const existingReg = await prisma.registration.findUnique({
+    // 3. KIỂM TRA TRÙNG LẶP: Dùng findFirst và tìm theo userId
+    const existingReg = await prisma.registration.findFirst({
       where: {
-        employeeId_eventId: {
-          employeeId: employeeId,
-          eventId: eventId
-        }
+        userId: userId,
+        eventId: eventId
       }
     });
 
     if (existingReg) {
       return NextResponse.json(
-        { error: `Nhân sự mang mã ${employeeId} đã đăng ký giải chạy này rồi!` },
+        { error: `Bạn đã đăng ký tham gia giải chạy này rồi!` },
         { status: 400 }
       );
     }
 
-    // 4. Lưu vào Database
+    // 4. Tạo mã BIB ngẫu nhiên (Ví dụ: SANO-8542) vì Schema bắt buộc phải có
+    const randomBib = `SANO-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    // 5. Lưu vào Database
     const newRegistration = await prisma.registration.create({
       data: {
-        employeeId,
+        userId,       // Dùng userId thay cho employeeId
         fullName,
+        department,   // Dùng department thay cho shirtSize
         distance,
-        shirtSize,
-        eventId
+        eventId,
+        bibNumber: randomBib // Bắt buộc phải có BIB
       }
     });
 

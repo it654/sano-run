@@ -20,7 +20,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { title, bannerUrl, location, date, deadline, status, distances, description } = body;
+    const { title, bannerUrl, location, date, deadline, status, distances, description,prizes, rules } = body;
 
     // Validate cơ bản
     if (!title || !location || !date || !deadline || !distances) {

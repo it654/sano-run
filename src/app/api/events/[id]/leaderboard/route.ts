@@ -6,12 +6,14 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  // 1. Sửa kiểu dữ liệu của params thành Promise
+  { params }: { params: Promise<{ id: string }> } 
 ) {
   try {
-    const eventId = params.id;
+    // 2. Bắt buộc phải await params trước khi lấy id
+    const resolvedParams = await params; 
+    const eventId = resolvedParams.id;
 
-    // Lấy danh sách đăng ký của giải này, gộp thông tin User và sắp xếp theo số KM
     const leaderboard = await prisma.registration.findMany({
       where: { eventId: eventId },
       include: {
@@ -23,7 +25,7 @@ export async function GET(
         }
       },
       orderBy: {
-        totalDistance: 'desc' // Sắp xếp giảm dần (Nhiều km nhất đứng đầu)
+        totalDistance: 'desc'
       }
     });
 
