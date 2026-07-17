@@ -37,10 +37,7 @@ export default function Home() {
 const doingEvents = events.filter(e => e.status === 'DOING');
   const featuredEvent = openEvents.length > 0 ? openEvents[0] : events[0];
 
-  return (
-    <div className="min-h-screen flex flex-col bg-[#f3f4f6]">
-      <Navbar />
-      
+  return (     
       <main className="flex-grow">
         {/* HERO BANNER FULL-WIDTH */}
         {featuredEvent && (
@@ -189,6 +186,6 @@ const doingEvents = events.filter(e => e.status === 'DOING');
       </main>
       
       
-    </div>
+    
   );
 }

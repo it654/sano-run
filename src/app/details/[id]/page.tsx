@@ -101,8 +101,7 @@ export default function EventDetailPage() {
 const isEventClosed = eventData.status === 'CLOSED' || eventData.status === 'DOING';
 
     return (
-        <div className="flex flex-col min-h-screen text-gray-800 bg-[#f3f4f6]">
-            <Navbar />
+     <>
 
             {/* HERO BANNER FULL-WIDTH */}
             <div className="w-full h-[300px] md:h-[450px] bg-gray-900 relative">
@@ -315,6 +314,6 @@ const isEventClosed = eventData.status === 'CLOSED' || eventData.status === 'DOI
                 eventId={eventData?.id || ''}
                 eventDistances={eventData?.distances || ''}
             />
-        </div>
+      </>  
     );
 }

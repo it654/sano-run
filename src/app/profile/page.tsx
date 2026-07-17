@@ -125,8 +125,7 @@ export default function ProfilePage() {
   ).sort((a, b) => new Date(b.runDate).getTime() - new Date(a.runDate).getTime());
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
-      <Navbar />
+    
       
       <main className="max-w-6xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-black text-[#1e3a8a] uppercase tracking-tight mb-6">Trang cá nhân</h1>
@@ -310,6 +309,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </main>
-    </div>
+   
   );
 }
