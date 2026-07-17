@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth/next';
 
 // 1. Import authOptions (Lưu ý đường dẫn lùi lại 2 thư mục)
