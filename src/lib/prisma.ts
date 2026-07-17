@@ -1,15 +1,12 @@
-import "dotenv/config";
-import { PrismaMariaDb } from "@prisma/adapter-mariadb";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
+// Tránh việc Next.js tạo ra quá nhiều kết nối database khi hot-reload trong môi trường Dev
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
 
-const adapter = new PrismaMariaDb({
-  host: process.env.DATABASE_HOST,
-  user: process.env.DATABASE_USER,
-  password: process.env.DATABASE_PASSWORD,
-  database: process.env.DATABASE_NAME,
-  connectionLimit: 5,
-});
-const prisma = new PrismaClient({ adapter });
+export const prisma = globalForPrisma.prisma ?? new PrismaClient();
 
-export { prisma };
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = prisma;
+}
