@@ -97,9 +97,9 @@ export default function EventDetailPage() {
     const runDateFormatted = eventData.date ? new Date(eventData.date).toLocaleDateString('vi-VN') : '';
     const endDateFormatted = eventData.endDate ? new Date(eventData.endDate).toLocaleDateString('vi-VN') : '';
     const dateRange = (runDateFormatted && endDateFormatted) ? `Từ ${runDateFormatted} - ${endDateFormatted}` : runDateFormatted;
-    
+
     // Format thời hạn đăng ký có kèm giờ phút
-    const deadlineFormatted = eventData.registrationDeadline 
+    const deadlineFormatted = eventData.registrationDeadline
         ? new Date(eventData.registrationDeadline).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })
         : '';
 
@@ -109,7 +109,7 @@ export default function EventDetailPage() {
     const isEventClosed = eventData.status === 'CLOSED' || eventData.status === 'DOING';
 
     return (
-     <>
+        <>
             {/* HERO BANNER FULL-WIDTH */}
             <div className="w-full h-[300px] md:h-[450px] bg-gray-900 relative">
                 <img
@@ -139,7 +139,7 @@ export default function EventDetailPage() {
                         <li><a href="#gioi-thieu" className="block py-4 text-sm font-bold text-red-600 border-b-2 border-red-600 whitespace-nowrap uppercase">Chi tiết giải chạy</a></li>
                         {/* <li><a href="#bang-xep-hang" className="block py-4 text-sm font-bold text-gray-600 hover:text-red-600 border-b-2 border-transparent hover:border-red-600 whitespace-nowrap uppercase transition-all">Bảng xếp hạng</a></li> */}
                     </ul>
-                    
+
                     {/* Ẩn hoàn toàn nút Đăng Ký trên Navbar nếu giải đã chạy */}
                     {!isEventClosed && (
                         <div className="hidden md:block py-2">
@@ -206,12 +206,12 @@ export default function EventDetailPage() {
                                             <svg className="w-5 h-5 bg-white text-black rounded-full p-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                             Chạy bộ
                                         </div>
-                                        
+
                                     </div>
-                                    <div className="bg-[#2B2D31] text-white px-5 py-2.5 rounded-full font-bold text-xs md:text-sm flex items-center justify-center gap-2 w-full max-w-[320px] text-center leading-tight mt-2">
+                                    {/* <div className="bg-[#2B2D31] text-white px-5 py-2.5 rounded-full font-bold text-xs md:text-sm flex items-center justify-center gap-2 w-full max-w-[320px] text-center leading-tight mt-2">
                                         <svg className="w-6 h-6 bg-white text-black rounded-full p-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
                                         Hoàn thành cuộc đua với <br />một hoặc nhiều hoạt động
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
                         </div>
@@ -225,10 +225,10 @@ export default function EventDetailPage() {
                     {/* Thuộc tính lg:w-2/3 chỉ áp dụng khi có Sidebar bên phải. Nếu sự kiện CLOSED, nó bung ra Full-width */}
                     <article className={`w-full ${!isEventClosed ? 'lg:w-2/3' : ''} transition-all duration-500`}>
                         <div id="gioi-thieu" className="scroll-mt-32">
-                            <EventDetailTabs 
-                                eventId={eventData.id} 
-                                eventData={eventData} 
-                                showResults={isEventClosed} 
+                            <EventDetailTabs
+                                eventId={eventData.id}
+                                eventData={eventData}
+                                showResults={isEventClosed}
                             />
                         </div>
                     </article>
@@ -261,13 +261,14 @@ export default function EventDetailPage() {
                                                 <p className="font-medium text-gray-900 text-sm">{dateRange}</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-start">
+                                        {eventData.location !== " " && <div className="flex items-start">
                                             <span className="w-5 h-5 text-gray-400 mr-3 mt-0.5 text-base">📍</span>
                                             <div>
                                                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Địa điểm</p>
                                                 <p className="font-medium text-gray-900 text-xs">{eventData.location}</p>
                                             </div>
-                                        </div>
+                                        </div>}
+
                                         <div className="flex items-start">
                                             <span className="w-5 h-5 text-gray-400 mr-3 mt-0.5 text-base">🏃</span>
                                             <div>
@@ -316,6 +317,6 @@ export default function EventDetailPage() {
                 eventId={eventData?.id || ''}
                 eventDistances={eventData?.distances || ''}
             />
-      </>  
+        </>
     );
 }
