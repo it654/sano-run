@@ -2,7 +2,6 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
-
 // 1. API Đọc 1 giải chạy (GET)
 export async function GET(
   request: Request,
@@ -39,10 +38,25 @@ export async function PUT(
     const eventId = resolvedParams.id;
     
     const body = await request.json();
-    const { title, bannerUrl, location, date, deadline, status, distances, description,prizes,rules,endDate } = body;
-    const parsedDate = date ? new Date(date).toISOString() : undefined;
-    const parsedEndDate = endDate ? new Date(endDate).toISOString() : null; 
-    const parsedDeadline = deadline ? new Date(deadline).toISOString() : undefined;
+    const { title, bannerUrl, location, date, deadline, status, distances, description, prizes, rules, endDate } = body;
+    
+    // ==========================================
+    // XỬ LÝ ÉP MÚI GIỜ VIỆT NAM CHO VPS MỸ
+    // ==========================================
+    // 1. Ngày bắt đầu / Kết thúc (YYYY-MM-DD): Ép thành đúng 00:00:00 giờ VN
+    const parsedDate = date 
+      ? new Date(date.includes('T') ? date : `${date}T00:00:00+07:00`).toISOString() 
+      : undefined;
+      
+    const parsedEndDate = endDate 
+      ? new Date(endDate.includes('T') ? endDate : `${endDate}T00:00:00+07:00`).toISOString() 
+      : null; 
+      
+    // 2. Giờ Hạn chót (YYYY-MM-DDThh:mm): Cộng thêm +07:00 vào chuỗi form để VPS hiểu đây là giờ VN
+    const parsedDeadline = deadline 
+      ? new Date((deadline.includes('Z') || deadline.includes('+')) ? deadline : `${deadline}+07:00`).toISOString() 
+      : undefined;
+
     const existingEvent = await prisma.event.findUnique({ where: { id: eventId } });
     if (!existingEvent) {
       return NextResponse.json({ error: 'Giải chạy không tồn tại' }, { status: 404 });
@@ -55,13 +69,13 @@ export async function PUT(
         banner: bannerUrl || null,
         location,
         date: parsedDate,
-        registrationDeadline: parsedEndDate as any,
+        registrationDeadline: parsedDeadline as any, // [ĐÃ SỬA] Trả lại đúng biến parsedDeadline
         status,
         distances,
         description,
         prizes, 
         rules,
-        endDate: parsedDeadline,
+        endDate: parsedEndDate, // [ĐÃ SỬA] Trả lại đúng biến parsedEndDate
       }
     });
 
