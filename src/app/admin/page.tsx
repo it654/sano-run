@@ -638,18 +638,19 @@ export default function AdminPage() {
                                 </div>
                             </div>
 
-                            {/* Lịch sử hoạt động (Yêu cầu API phải trả về field 'activities') */}
+                            {/* Lịch sử hoạt động */}
                             <div>
                                 <h3 className="font-bold text-[#E32626] mb-4 uppercase text-sm border-b pb-2">Lịch sử nộp kết quả</h3>
                                 {selectedReg.activities && selectedReg.activities.length > 0 ? (
-                                    <div className="space-y-3">
+                                    // THÊM max-h-80 (khoảng 320px) và overflow-y-auto VÀO DÒNG NÀY
+                                    <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
                                         {selectedReg.activities.map((act: any, idx: number) => (
                                             <div key={idx} className="flex justify-between items-center bg-white p-4 border border-gray-100 rounded-xl shadow-sm">
                                                 <div>
                                                     <p className="font-bold text-gray-900 text-sm">{new Date(act.runDate).toLocaleDateString('vi-VN')}</p>
-                                                    {/* <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 inline-block ${act.status === 'APPROVED' ? 'bg-green-100 text-green-700' : act.status === 'REJECTED' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 inline-block ${act.status === 'APPROVED' ? 'bg-green-100 text-green-700' : act.status === 'REJECTED' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
                                                         {act.status}
-                                                    </span> */}
+                                                    </span>
                                                 </div>
                                                 <div className="text-right flex flex-col items-end gap-2">
                                                     <p className="font-black text-green-600">+{act.distance} km</p>
@@ -659,13 +660,11 @@ export default function AdminPage() {
                                                             className="cursor-pointer group relative rounded-lg overflow-hidden border border-gray-200 shadow-sm"
                                                             title="Bấm để xem ảnh lớn"
                                                         >
-                                                            {/* Ảnh thu nhỏ vuông vức */}
                                                             <img 
                                                                 src={act.proofImage} 
                                                                 alt="Bằng chứng" 
                                                                 className="w-12 h-12 object-cover group-hover:scale-110 transition-transform duration-300"
                                                             />
-                                                            {/* Lớp phủ mờ và icon kính lúp khi di chuột vào */}
                                                             <div className="absolute inset-0 bg-black/30 hidden group-hover:flex items-center justify-center transition-all">
                                                                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
                                                             </div>
@@ -677,10 +676,11 @@ export default function AdminPage() {
                                     </div>
                                 ) : (
                                     <div className="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-8 text-center">
-                                        <p className="text-sm text-gray-500 font-medium">Vận động viên này chưa nộp kết quả chạy nào.</p>
+                                        <p className="text-sm text-gray-500 font-medium">Chưa nộp kết quả chạy nào.</p>
                                     </div>
                                 )}
                             </div>
+                            
                         </div>
                     </div>
                 </div>
