@@ -170,10 +170,10 @@ export default function AdminPage() {
         if (window.confirm('Hành động này sẽ xóa đơn đăng ký và mọi kết quả chạy của nhân sự này. Bạn có chắc không?')) {
             try {
                 // Gọi API DELETE vừa tạo
-                const res = await fetch(`/api/admin/registrations/${id}`, { 
-                    method: 'DELETE' 
+                const res = await fetch(`/api/admin/registrations/${id}`, {
+                    method: 'DELETE'
                 });
-                
+
                 if (res.ok) {
                     alert('Đã xóa đơn đăng ký thành công!');
                     fetchRegistrations(); // Gọi lại hàm fetch để làm mới danh sách hiển thị
@@ -195,6 +195,7 @@ export default function AdminPage() {
         const payload = {
             title: formData.get('title') as string,
             date: formData.get('date') as string,
+            endDate: formData.get('endDate') as string,
             deadline: formData.get('deadline') as string,
             location: formData.get('location') as string,
             distances: selectedDistances,
@@ -412,7 +413,10 @@ export default function AdminPage() {
                                         ) : (
                                             eventsData.map((ev) => {
                                                 const runDate = new Date(ev.date).toLocaleDateString('vi-VN');
-                                                const deadlineDate = new Date(ev.registrationDeadline).toLocaleDateString('vi-VN');
+                                                const endDate = ev.endDate ? new Date(ev.endDate).toLocaleDateString('vi-VN') : '';
+                                                const deadlineDate = ev.registrationDeadline 
+                                                    ? new Date(ev.registrationDeadline).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }) 
+                                                    : '';
 
                                                 return (
                                                     <tr key={ev.id} className="hover:bg-gray-50 transition-colors">
@@ -426,8 +430,9 @@ export default function AdminPage() {
                                                             </div>
                                                         </td>
                                                         <td className="px-6 py-4">
-                                                            <p className="font-medium text-gray-900">Chạy: {runDate}</p>
-                                                            <p className="text-xs text-red-500 mt-1">Hạn ĐK: {deadlineDate}</p>
+                                                            {/* Cập nhật UI cột Lịch trình */}
+                                                            <p className="font-medium text-gray-900 text-xs">Từ: {runDate} - {endDate}</p>
+                                                            <p className="text-xs text-red-600 mt-1 font-bold">Đóng ĐK: {deadlineDate}</p>
                                                         </td>
                                                         <td className="px-6 py-4 text-center">
                                                             {ev.status === 'OPEN' && <span className="bg-green-100 text-green-800 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">Đang mở</span>}
@@ -436,11 +441,22 @@ export default function AdminPage() {
                                                             {ev.status === 'CLOSED' && <span className="bg-gray-200 text-gray-600 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">Kết thúc</span>}
                                                         </td>
                                                         <td className="px-6 py-4 text-right">
-                                                            <button onClick={() => openEditModal({
-                                                                ...ev,
-                                                                date: new Date(ev.date).toISOString().split('T')[0],
-                                                                deadline: new Date(ev.registrationDeadline).toISOString().split('T')[0]
-                                                            })}
+                                                            <button onClick={() => {
+                                                                // Hàm chuyển đổi giờ UTC từ Database sang giờ Local của máy tính
+                                                                const formatDateTimeLocal = (d: string) => {
+                                                                    if (!d) return '';
+                                                                    const dateObj = new Date(d);
+                                                                    dateObj.setMinutes(dateObj.getMinutes() - dateObj.getTimezoneOffset());
+                                                                    return dateObj.toISOString().slice(0, 16); // Cắt lấy định dạng YYYY-MM-DDThh:mm
+                                                                };
+
+                                                                openEditModal({
+                                                                    ...ev,
+                                                                    date: ev.date ? new Date(ev.date).toISOString().split('T')[0] : '',
+                                                                    endDate: ev.endDate ? new Date(ev.endDate).toISOString().split('T')[0] : '',
+                                                                    deadline: formatDateTimeLocal(ev.registrationDeadline)
+                                                                });
+                                                            }}
                                                                 className="text-blue-600 hover:text-blue-800 font-bold text-xs mr-4 uppercase"
                                                             >
                                                                 Sửa
@@ -509,13 +525,19 @@ export default function AdminPage() {
 
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Ngày chạy <span className="text-red-500">*</span></label>
+                                                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Bắt đầu <span className="text-red-500">*</span></label>
                                                 <input type="date" name="date" required defaultValue={editingEvent?.date} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E32626] text-sm" />
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Hạn Đăng ký <span className="text-red-500">*</span></label>
-                                                <input type="date" name="deadline" required defaultValue={editingEvent?.deadline} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E32626] text-sm" />
+                                                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Kết thúc <span className="text-red-500">*</span></label>
+                                                <input type="date" name="endDate" required defaultValue={editingEvent?.endDate} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E32626] text-sm" />
                                             </div>
+                                        </div>
+
+                                        {/* Tách Hạn đăng ký xuống 1 hàng riêng, full chiều rộng để đủ chỗ hiện cả Ngày và Giờ */}
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Hạn Đăng ký (Ngày & Giờ) <span className="text-red-500">*</span></label>
+                                            <input type="datetime-local" name="deadline" required defaultValue={editingEvent?.deadline} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E32626] text-sm" />
                                         </div>
 
                                         <div>
@@ -618,7 +640,7 @@ export default function AdminPage() {
 
                         {/* Body - Đã đổi thành flex-col và overflow-hidden để chặn cuộn toàn modal */}
                         <div className="p-6 flex flex-col flex-grow overflow-hidden space-y-6 bg-white">
-                            
+
                             {/* Thông tin cá nhân - Thêm shrink-0 để khối này không bị bóp nhỏ */}
                             <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100 shrink-0">
                                 <h3 className="font-bold text-[#E32626] mb-4 uppercase text-sm border-b pb-2">Thông tin vận động viên</h3>
@@ -640,8 +662,8 @@ export default function AdminPage() {
                                 </div>
 
                                 <div className="w-full bg-gray-200 rounded-full h-3">
-                                    <div 
-                                        className="bg-green-500 h-3 rounded-full transition-all duration-500" 
+                                    <div
+                                        className="bg-green-500 h-3 rounded-full transition-all duration-500"
                                         style={{ width: `${Math.min(((selectedReg.totalDistance || 0) / parseInt(selectedReg.distance || '1')) * 100, 100)}%` }}
                                     ></div>
                                 </div>
@@ -657,19 +679,19 @@ export default function AdminPage() {
                                             <div key={idx} className="flex justify-between items-center bg-white p-4 border border-gray-100 rounded-xl shadow-sm shrink-0">
                                                 <div>
                                                     <p className="font-bold text-gray-900 text-sm">{new Date(act.runDate).toLocaleDateString('vi-VN')}</p>
-                                                
+
                                                 </div>
                                                 <div className="text-right flex flex-col items-end gap-2">
                                                     <p className="font-black text-green-600">+{act.distance} km</p>
                                                     {act.proofImage && (
-                                                        <div 
+                                                        <div
                                                             onClick={() => setPreviewImage(act.proofImage)}
                                                             className="cursor-pointer group relative rounded-lg overflow-hidden border border-gray-200 shadow-sm"
                                                             title="Bấm để xem ảnh lớn"
                                                         >
-                                                            <img 
-                                                                src={act.proofImage} 
-                                                                alt="Bằng chứng" 
+                                                            <img
+                                                                src={act.proofImage}
+                                                                alt="Bằng chứng"
                                                                 className="w-12 h-12 object-cover group-hover:scale-110 transition-transform duration-300"
                                                             />
                                                             <div className="absolute inset-0 bg-black/30 hidden group-hover:flex items-center justify-center transition-all">
@@ -693,24 +715,24 @@ export default function AdminPage() {
             )}
             {/* MODAL PHÓNG TO ẢNH CHỨNG MINH */}
             {previewImage && (
-                <div 
+                <div
                     className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
                     onClick={() => setPreviewImage(null)} // Click ra ngoài nền đen để đóng
                 >
                     <div className="relative max-w-4xl max-h-[90vh] flex items-center justify-center animate-in zoom-in-95 duration-200">
                         {/* Nút đóng (X) */}
-                        <button 
-                            onClick={() => setPreviewImage(null)} 
+                        <button
+                            onClick={() => setPreviewImage(null)}
                             className="absolute -top-12 right-0 text-white/70 hover:text-white bg-black/50 hover:bg-red-500 rounded-full p-2 transition-colors"
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
-                        
+
                         {/* Ảnh hiển thị full size */}
-                        <img 
-                            src={previewImage} 
-                            alt="Ảnh bằng chứng lớn" 
-                            className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl" 
+                        <img
+                            src={previewImage}
+                            alt="Ảnh bằng chứng lớn"
+                            className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
                             onClick={(e) => e.stopPropagation()} // Chống đóng khi click vào chính tấm ảnh
                         />
                     </div>

@@ -93,16 +93,23 @@ export default function EventDetailPage() {
         );
     }
 
-    const runDateFormatted = new Date(eventData.date).toLocaleDateString('vi-VN');
-    const deadlineFormatted = new Date(eventData.registrationDeadline).toLocaleDateString('vi-VN');
+    // Các hàm format thời gian
+    const runDateFormatted = eventData.date ? new Date(eventData.date).toLocaleDateString('vi-VN') : '';
+    const endDateFormatted = eventData.endDate ? new Date(eventData.endDate).toLocaleDateString('vi-VN') : '';
+    const dateRange = (runDateFormatted && endDateFormatted) ? `Từ ${runDateFormatted} - ${endDateFormatted}` : runDateFormatted;
+    
+    // Format thời hạn đăng ký có kèm giờ phút
+    const deadlineFormatted = eventData.registrationDeadline 
+        ? new Date(eventData.registrationDeadline).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })
+        : '';
+
     const distancesArray = eventData.distances.split(',').map((d: string) => d.trim());
 
     // Phải gọi lại biến eventData.status ở vế sau
-const isEventClosed = eventData.status === 'CLOSED' || eventData.status === 'DOING';
+    const isEventClosed = eventData.status === 'CLOSED' || eventData.status === 'DOING';
 
     return (
      <>
-
             {/* HERO BANNER FULL-WIDTH */}
             <div className="w-full h-[300px] md:h-[450px] bg-gray-900 relative">
                 <img
@@ -120,7 +127,7 @@ const isEventClosed = eventData.status === 'CLOSED' || eventData.status === 'DOI
                         <h1 className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-wide text-shadow-md">
                             {eventData.title}
                         </h1>
-                        <p className="text-gray-200 mt-2 font-medium text-lg">{eventData.location} | {runDateFormatted}</p>
+                        <p className="text-gray-200 mt-2 font-medium text-lg">{eventData.location} | {dateRange}</p>
                     </div>
                 </div>
             </div>
@@ -166,7 +173,7 @@ const isEventClosed = eventData.status === 'CLOSED' || eventData.status === 'DOI
                             </div>
 
                             <div className="text-gray-600 text-sm font-medium mb-8">
-                                Đóng cổng đăng ký lúc: <span className="text-[#E32626]">23:59 ngày {deadlineFormatted}</span>
+                                Đóng cổng đăng ký lúc: <span className="text-[#E32626] font-bold">{deadlineFormatted}</span>
                             </div>
                         </div>
 
@@ -199,10 +206,7 @@ const isEventClosed = eventData.status === 'CLOSED' || eventData.status === 'DOI
                                             <svg className="w-5 h-5 bg-white text-black rounded-full p-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                             Chạy bộ
                                         </div>
-                                        <div className="bg-[#2B2D31] text-white px-5 py-2.5 rounded-full font-bold text-sm flex items-center gap-2">
-                                            <svg className="w-5 h-5 bg-white text-black rounded-full p-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
-                                            Đi bộ
-                                        </div>
+                                        
                                     </div>
                                     <div className="bg-[#2B2D31] text-white px-5 py-2.5 rounded-full font-bold text-xs md:text-sm flex items-center justify-center gap-2 w-full max-w-[320px] text-center leading-tight mt-2">
                                         <svg className="w-6 h-6 bg-white text-black rounded-full p-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
@@ -247,14 +251,14 @@ const isEventClosed = eventData.status === 'CLOSED' || eventData.status === 'DOI
                                             <span className="w-5 h-5 text-gray-400 mr-3 mt-0.5 text-base">📅</span>
                                             <div>
                                                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Hạn chót đăng ký</p>
-                                                <p className="font-medium text-gray-900 text-sm">23:59 - {deadlineFormatted}</p>
+                                                <p className="font-bold text-[#E32626] text-sm">{deadlineFormatted}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-start">
                                             <span className="w-5 h-5 text-gray-400 mr-3 mt-0.5 text-base">🏁</span>
                                             <div>
                                                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Ngày diễn ra</p>
-                                                <p className="font-medium text-gray-900 text-sm">Từ {runDateFormatted}</p>
+                                                <p className="font-medium text-gray-900 text-sm">{dateRange}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-start">
@@ -297,7 +301,6 @@ const isEventClosed = eventData.status === 'CLOSED' || eventData.status === 'DOI
                                     </div>
                                     <div>
                                         <p className="font-bold text-gray-900 text-sm">Phòng Hành chính Nhân sự</p>
-                                        <p className="text-[11px] text-gray-500 mt-1">SĐT Hỗ trợ: <span className="text-red-600 font-bold">0987.654.321</span></p>
                                     </div>
                                 </div>
                             </div>
@@ -305,7 +308,6 @@ const isEventClosed = eventData.status === 'CLOSED' || eventData.status === 'DOI
                     )}
                 </div>
             </main>
-
 
             <RegistrationModal
                 isOpen={isModalOpen}

@@ -4,13 +4,14 @@ interface EventCardProps {
   id: string; 
   title: string;
   date: string;
+  deadline?: string; // [MỚI] Thêm prop deadline (có thể trống)
   location: string;
-  status: 'UPCOMING' | 'OPEN' | 'CLOSED';
+  status: 'UPCOMING' | 'OPEN' | 'CLOSED' | 'DOING';
   distances: string;
   imageUrl?: string;
 }
 
-export default function EventCard({ id, title, date, location, status, distances, imageUrl }: EventCardProps) {
+export default function EventCard({ id, title, date, deadline, location, status, distances, imageUrl }: EventCardProps) {
   const statusConfig = {
     UPCOMING: { text: 'Sắp tới', badge: 'bg-blue-100 text-blue-800' },
     OPEN: { text: 'Đang mở', badge: 'bg-green-100 text-green-800' },
@@ -43,13 +44,26 @@ export default function EventCard({ id, title, date, location, status, distances
           {title}
         </h3>
         
-        <div className="text-xs text-gray-600 mb-5 space-y-1.5 font-medium">
-          <p className="flex items-center"><span className="mr-2">📍</span>{location}</p>
-          <p className="flex items-center"><span className="mr-2">📅</span>{date}</p>
-          <p className="flex items-center font-bold text-gray-800"><span className="mr-2">🏃</span>{distances}</p>
+        <div className="text-xs text-gray-600 mb-5 space-y-2 font-medium">
+          <p className="flex items-start"><span className="mr-2 mt-0.5 shrink-0">📍</span><span className="leading-relaxed">{location}</span></p>
+          
+          <p className="flex items-start">
+            <span className="mr-2 mt-0.5 shrink-0">📅</span>
+            <span className="leading-relaxed">{date}</span>
+          </p>
+
+          {/* [MỚI] Tách riêng dòng Deadline hiển thị màu đỏ để nhấn mạnh */}
+          {deadline && (
+            <p className="flex items-start text-red-600 font-bold">
+              <span className="mr-2 mt-0.5 shrink-0">⏰</span>
+              <span className="leading-relaxed">{deadline}</span>
+            </p>
+          )}
+          
+          <p className="flex items-start font-bold text-gray-800"><span className="mr-2 mt-0.5 shrink-0">🏃</span><span className="leading-relaxed">{distances}</span></p>
         </div>
 
-        {/* CẬP NHẬT: Trỏ href về /details/${id} */}
+        {/* Nút bấm */}
         <div className="mt-auto pt-4 border-t border-gray-100">
           <Link 
             href={`/details/${id}`} 

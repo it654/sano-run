@@ -39,7 +39,7 @@ export async function PUT(
     const eventId = resolvedParams.id;
     
     const body = await request.json();
-    const { title, bannerUrl, location, date, deadline, status, distances, description,prizes,rules } = body;
+    const { title, bannerUrl, location, date, deadline, status, distances, description,prizes,rules,endDate } = body;
 
     const existingEvent = await prisma.event.findUnique({ where: { id: eventId } });
     if (!existingEvent) {
@@ -59,6 +59,7 @@ export async function PUT(
         description,
         prizes, 
         rules,
+        endDate: new Date(endDate),
       }
     });
 

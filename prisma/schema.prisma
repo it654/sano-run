@@ -45,6 +45,7 @@ model Event {
   prizes               String?        @db.Text // Dùng cho tab Giải thưởng
   rules                String?        @db.Text // Dùng cho tab Điều lệ
   registrations        Registration[]
+  endDate             DateTime?
 }
 
 model Registration {

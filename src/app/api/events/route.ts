@@ -20,7 +20,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { title, bannerUrl, location, date, deadline, status, distances, description,prizes, rules } = body;
+    const { title, bannerUrl, location, date, deadline, status, distances, description,prizes, rules,endDate } = body;
 
     // Validate cơ bản
     if (!title || !location || !date || !deadline || !distances) {
@@ -38,7 +38,8 @@ export async function POST(request: Request) {
         status: status || 'UPCOMING',
         distances,
         prizes, 
-        rules
+        rules,
+        endDate
         // Nếu schema Prisma của bạn có thêm trường description (Rich text), hãy thêm vào đây
         // description: description, 
       }
