@@ -288,9 +288,9 @@ export default function ProfilePage() {
                                 <p className="font-black text-xl text-[#E32626]">{act.distance} km</p>
                                 <p className="text-xs text-gray-600 mt-0.5 truncate w-48">{act.eventTitle}</p>
                               </div>
-                              <span className={`text-[10px] font-bold px-2 py-1 rounded-md shrink-0 ${act.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' : 'bg-green-100 text-green-700 border border-green-200'}`}>
+                              {/* <span className={`text-[10px] font-bold px-2 py-1 rounded-md shrink-0 ${act.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' : 'bg-green-100 text-green-700 border border-green-200'}`}>
                                 {act.status === 'PENDING' ? 'Đang chờ' : 'Đã duyệt'}
-                              </span>
+                              </span> */}
                             </div>
                             
                             <div className="rounded-lg overflow-hidden border border-gray-200 bg-white">

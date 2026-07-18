@@ -1,27 +1,28 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
-
-
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    // Kiểm tra đăng nhập (Bạn có thể thêm logic check Role Admin ở đây nếu có)
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Không có quyền truy cập' }, { status: 401 });
-    }
+    // Đã gỡ bỏ toàn bộ logic yêu cầu đăng nhập (session) cho mạng nội bộ
 
     // Lấy toàn bộ danh sách đăng ký
     const registrations = await prisma.registration.findMany({
       include: {
-        user: { select: { name: true, email: true } },
-        event: { select: { title: true } } // Lấy tên giải chạy để hiển thị và lọc
+        user: { 
+            select: { name: true, email: true } 
+        },
+        event: { 
+            select: { title: true } 
+        },
+        // Bổ sung lấy dữ liệu activities để render Lịch sử chạy trong Modal
+        activities: {
+            orderBy: {
+                runDate: 'desc' // Hoạt động mới nhất lên đầu
+            }
+        }
       },
       orderBy: {
-        id: 'desc' // Đơn mới nhất lên đầu
+        id: 'desc' // Đơn đăng ký mới nhất lên đầu
       }
     });
 
