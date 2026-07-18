@@ -123,7 +123,26 @@ export default function ProfilePage() {
       eventTitle: reg.event.title
     }))
   ).sort((a, b) => new Date(b.runDate).getTime() - new Date(a.runDate).getTime());
-
+  // Hàm xử lý xóa kết quả
+  const handleDeleteActivity = async (activityId: string) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa kết quả chạy này không? Hành động này không thể hoàn tác.')) {
+      try {
+        const res = await fetch(`/api/activities/${activityId}`, {
+          method: 'DELETE'
+        });
+        
+        if (res.ok) {
+          alert("Xóa kết quả thành công!");
+          fetchMyRegistrations(); // Refresh lại dữ liệu ngay lập tức
+        } else {
+          const err = await res.json();
+          alert("Lỗi: " + err.error);
+        }
+      } catch (error) {
+        alert("Lỗi hệ thống khi xóa kết quả.");
+      }
+    }
+  };
   return (
     
       
@@ -288,9 +307,13 @@ export default function ProfilePage() {
                                 <p className="font-black text-xl text-[#E32626]">{act.distance} km</p>
                                 <p className="text-xs text-gray-600 mt-0.5 truncate w-48">{act.eventTitle}</p>
                               </div>
-                              {/* <span className={`text-[10px] font-bold px-2 py-1 rounded-md shrink-0 ${act.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' : 'bg-green-100 text-green-700 border border-green-200'}`}>
-                                {act.status === 'PENDING' ? 'Đang chờ' : 'Đã duyệt'}
-                              </span> */}
+                              <button 
+                                onClick={() => handleDeleteActivity(act.id)}
+                                className="text-red-500 hover:text-white hover:bg-red-500 border border-red-500 bg-white text-[10px] font-bold px-2 py-1 rounded-md transition-colors shadow-sm shrink-0"
+                                title="Xóa kết quả này"
+                              >
+                                Xóa bỏ
+                              </button>
                             </div>
                             
                             <div className="rounded-lg overflow-hidden border border-gray-200 bg-white">
