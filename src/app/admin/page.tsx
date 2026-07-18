@@ -607,10 +607,11 @@ export default function AdminPage() {
                             </button>
                         </div>
 
-                        {/* Body */}
-                        <div className="p-6 overflow-y-auto space-y-6 bg-white">
-                            {/* Thông tin cá nhân */}
-                            <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                        {/* Body - Đã đổi thành flex-col và overflow-hidden để chặn cuộn toàn modal */}
+                        <div className="p-6 flex flex-col flex-grow overflow-hidden space-y-6 bg-white">
+                            
+                            {/* Thông tin cá nhân - Thêm shrink-0 để khối này không bị bóp nhỏ */}
+                            <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100 shrink-0">
                                 <h3 className="font-bold text-[#E32626] mb-4 uppercase text-sm border-b pb-2">Thông tin vận động viên</h3>
                                 <div className="grid grid-cols-2 gap-4 text-sm">
                                     <div><span className="text-gray-500 block text-xs mb-1">Họ và tên</span><span className="font-bold text-gray-900">{selectedReg.fullName || selectedReg.user?.name}</span></div>
@@ -620,8 +621,8 @@ export default function AdminPage() {
                                 </div>
                             </div>
 
-                            {/* Thông tin tiến độ */}
-                            <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                            {/* Thông tin tiến độ - Thêm shrink-0 */}
+                            <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100 shrink-0">
                                 <h3 className="font-bold text-[#E32626] mb-4 uppercase text-sm border-b pb-2">Tiến độ giải chạy</h3>
                                 <div className="grid grid-cols-2 gap-4 text-sm mb-5">
                                     <div className="col-span-2"><span className="text-gray-500 block text-xs mb-1">Tên giải đang tham gia</span><span className="font-bold text-gray-900">{selectedReg.event?.title}</span></div>
@@ -629,28 +630,25 @@ export default function AdminPage() {
                                     <div><span className="text-gray-500 block text-xs mb-1">Tổng KM đã chạy</span><span className="font-black text-green-600 text-lg">{selectedReg.totalDistance || 0} km</span></div>
                                 </div>
 
-                                {/* Thanh tiến trình (Tính toán tự động dựa trên số KM) */}
                                 <div className="w-full bg-gray-200 rounded-full h-3">
-                                    <div
-                                        className="bg-green-500 h-3 rounded-full transition-all duration-500"
+                                    <div 
+                                        className="bg-green-500 h-3 rounded-full transition-all duration-500" 
                                         style={{ width: `${Math.min(((selectedReg.totalDistance || 0) / parseInt(selectedReg.distance || '1')) * 100, 100)}%` }}
                                     ></div>
                                 </div>
                             </div>
 
-                            {/* Lịch sử hoạt động */}
-                            <div>
-                                <h3 className="font-bold text-[#E32626] mb-4 uppercase text-sm border-b pb-2">Lịch sử nộp kết quả</h3>
+                            {/* Lịch sử hoạt động - Thêm flex-col và flex-grow để ép nó chiếm hết không gian còn lại */}
+                            <div className="flex flex-col flex-grow overflow-hidden">
+                                <h3 className="font-bold text-[#E32626] mb-4 uppercase text-sm border-b pb-2 shrink-0">Lịch sử nộp kết quả</h3>
                                 {selectedReg.activities && selectedReg.activities.length > 0 ? (
-                                    // THÊM max-h-80 (khoảng 320px) và overflow-y-auto VÀO DÒNG NÀY
-                                    <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
+                                    // Đã xóa max-h-80, thay bằng flex-grow để tự động vừa khít khoảng trống
+                                    <div className="space-y-3 overflow-y-auto pr-2 flex-grow pb-2">
                                         {selectedReg.activities.map((act: any, idx: number) => (
-                                            <div key={idx} className="flex justify-between items-center bg-white p-4 border border-gray-100 rounded-xl shadow-sm">
+                                            <div key={idx} className="flex justify-between items-center bg-white p-4 border border-gray-100 rounded-xl shadow-sm shrink-0">
                                                 <div>
                                                     <p className="font-bold text-gray-900 text-sm">{new Date(act.runDate).toLocaleDateString('vi-VN')}</p>
-                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 inline-block ${act.status === 'APPROVED' ? 'bg-green-100 text-green-700' : act.status === 'REJECTED' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                                        {act.status}
-                                                    </span>
+                                                
                                                 </div>
                                                 <div className="text-right flex flex-col items-end gap-2">
                                                     <p className="font-black text-green-600">+{act.distance} km</p>
@@ -675,12 +673,11 @@ export default function AdminPage() {
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-8 text-center">
-                                        <p className="text-sm text-gray-500 font-medium">Chưa nộp kết quả chạy nào.</p>
+                                    <div className="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-8 text-center shrink-0">
+                                        <p className="text-sm text-gray-500 font-medium">Vận động viên này chưa nộp kết quả chạy nào.</p>
                                     </div>
                                 )}
                             </div>
-                            
                         </div>
                     </div>
                 </div>
