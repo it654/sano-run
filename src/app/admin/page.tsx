@@ -191,12 +191,13 @@ export default function AdminPage() {
     const handleSaveEvent = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-
+        const rawDeadline = formData.get('deadline') as string;
+        const deadlineUTC = rawDeadline ? new Date(rawDeadline).toISOString() : '';
         const payload = {
             title: formData.get('title') as string,
             date: formData.get('date') as string,
             endDate: formData.get('endDate') as string,
-            deadline: formData.get('deadline') as string,
+            deadline: deadlineUTC,
             location: formData.get('location') as string,
             distances: selectedDistances,
             status: formData.get('status') as string,
@@ -414,8 +415,8 @@ export default function AdminPage() {
                                             eventsData.map((ev) => {
                                                 const runDate = new Date(ev.date).toLocaleDateString('vi-VN');
                                                 const endDate = ev.endDate ? new Date(ev.endDate).toLocaleDateString('vi-VN') : '';
-                                                const deadlineDate = ev.registrationDeadline 
-                                                    ? new Date(ev.registrationDeadline).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }) 
+                                                const deadlineDate = ev.registrationDeadline
+                                                    ? new Date(ev.registrationDeadline).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })
                                                     : '';
 
                                                 return (
