@@ -143,7 +143,7 @@ export default function RegistrationModal({ isOpen, onClose, eventTitle, eventId
                       <option value="Tesla">Tesla</option>
                       <option value="Punch">Punch</option>
                       <option value="Diamond">Diamond</option>
-                      <option value="Punch">Rambo</option>
+                      <option value="Rambo">Rambo</option>
                       <option value="Attack">Attack</option>
                       <option value="Wevic">Wevic</option>
                       <option value="HR">Nhân sự</option>
