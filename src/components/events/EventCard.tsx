@@ -45,7 +45,7 @@ export default function EventCard({ id, title, date, deadline, location, status,
         </h3>
         
         <div className="text-xs text-gray-600 mb-5 space-y-2 font-medium">
-          <p className="flex items-start"><span className="mr-2 mt-0.5 shrink-0">📍</span><span className="leading-relaxed">{location}</span></p>
+          {location && <p className="flex items-start"><span className="mr-2 mt-0.5 shrink-0">📍</span><span className="leading-relaxed">{location}</span></p>}
           
           <p className="flex items-start">
             <span className="mr-2 mt-0.5 shrink-0">📅</span>

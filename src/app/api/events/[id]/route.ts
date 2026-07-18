@@ -40,7 +40,9 @@ export async function PUT(
     
     const body = await request.json();
     const { title, bannerUrl, location, date, deadline, status, distances, description,prizes,rules,endDate } = body;
-
+    const parsedDate = date ? new Date(date).toISOString() : undefined;
+    const parsedEndDate = endDate ? new Date(endDate).toISOString() : null; 
+    const parsedDeadline = deadline ? new Date(deadline).toISOString() : undefined;
     const existingEvent = await prisma.event.findUnique({ where: { id: eventId } });
     if (!existingEvent) {
       return NextResponse.json({ error: 'Giải chạy không tồn tại' }, { status: 404 });
@@ -52,14 +54,14 @@ export async function PUT(
         title,
         banner: bannerUrl || null,
         location,
-        date: new Date(date),
-        registrationDeadline: new Date(deadline),
+        date: parsedDate,
+        registrationDeadline: parsedEndDate as any,
         status,
         distances,
         description,
         prizes, 
         rules,
-        endDate: new Date(endDate),
+        endDate: parsedDeadline,
       }
     });
 

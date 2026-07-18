@@ -74,7 +74,7 @@ export default function Home() {
               </h1>
 
               <p className="text-gray-200 font-medium text-lg max-w-2xl mb-6">
-                Lịch trình: {formatDateRange(featuredEvent.date, featuredEvent.endDate)} tại {featuredEvent.location}
+                Lịch trình: {formatDateRange(featuredEvent.date, featuredEvent.endDate)} {featuredEvent.location && <span>tại {featuredEvent.location}</span>} 
 
                 {/* [MỚI] Hiển thị hạn đăng ký trên Banner nếu giải đang mở */}
                 {featuredEvent.status === 'OPEN' && featuredEvent.registrationDeadline && (

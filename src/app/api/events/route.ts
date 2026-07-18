@@ -21,7 +21,9 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { title, bannerUrl, location, date, deadline, status, distances, description,prizes, rules,endDate } = body;
-
+    const parsedDate = date ? new Date(date).toISOString() : undefined;
+    const parsedEndDate = endDate ? new Date(endDate).toISOString() : null; 
+    const parsedDeadline = deadline ? new Date(deadline).toISOString() : undefined;
     // Validate cơ bản
     if (!title || !location || !date || !deadline || !distances) {
       return NextResponse.json({ error: 'Vui lòng điền đầy đủ các thông tin bắt buộc!' }, { status: 400 });
@@ -33,13 +35,13 @@ export async function POST(request: Request) {
         title,
         banner: bannerUrl || null,
         location,
-        date: new Date(date), // Chuyển chuỗi YYYY-MM-DD thành Date object
-        registrationDeadline: new Date(deadline),
+        date: parsedDate as any, // Chuyển chuỗi YYYY-MM-DD thành Date object
+        registrationDeadline: parsedDeadline as any,
         status: status || 'UPCOMING',
         distances,
         prizes, 
         rules,
-        endDate
+        endDate:parsedEndDate
         // Nếu schema Prisma của bạn có thêm trường description (Rich text), hãy thêm vào đây
         // description: description, 
       }
