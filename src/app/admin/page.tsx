@@ -169,12 +169,21 @@ export default function AdminPage() {
     const handleDeleteRegistration = async (id: string) => {
         if (window.confirm('Hành động này sẽ xóa đơn đăng ký và mọi kết quả chạy của nhân sự này. Bạn có chắc không?')) {
             try {
-                // Bạn có thể tạo thêm API DELETE /api/admin/registrations/[id] sau
-                alert("Tính năng xóa đơn đang phát triển. Hãy tạo API DELETE để gắn vào đây nhé!");
-                // const res = await fetch(`/api/admin/registrations/${id}`, { method: 'DELETE' });
-                // fetchRegistrations();
+                // Gọi API DELETE vừa tạo
+                const res = await fetch(`/api/admin/registrations/${id}`, { 
+                    method: 'DELETE' 
+                });
+                
+                if (res.ok) {
+                    alert('Đã xóa đơn đăng ký thành công!');
+                    fetchRegistrations(); // Gọi lại hàm fetch để làm mới danh sách hiển thị
+                } else {
+                    const err = await res.json();
+                    alert(`Lỗi: ${err.error}`);
+                }
             } catch (error) {
-                console.error(error);
+                console.error('Lỗi khi gọi API xóa:', error);
+                alert('Lỗi hệ thống khi xóa đơn đăng ký.');
             }
         }
     }
