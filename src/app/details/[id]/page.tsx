@@ -228,7 +228,7 @@ export default function EventDetailPage() {
                             <EventDetailTabs
                                 eventId={eventData.id}
                                 eventData={eventData}
-                                showResults={isEventClosed}
+                                showResults={false}
                             />
                         </div>
                     </article>
