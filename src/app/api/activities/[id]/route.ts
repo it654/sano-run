@@ -42,14 +42,28 @@ export async function DELETE(
             return NextResponse.json({ error: 'Bạn không có quyền xóa kết quả của vận động viên khác' }, { status: 403 });
         }
 
-        // 4. VƯỢT QUA MỌI KIỂM TRA -> THỰC HIỆN XÓA
-        await prisma.activity.delete({
-            where: {
-                id: id
-            }
-        });
+        // 4. VƯỢT QUA MỌI KIỂM TRA -> THỰC HIỆN XÓA VÀ TRỪ KM (Dùng Transaction để đảm bảo tính đồng bộ)
+        await prisma.$transaction([
+            // Lệnh 1: Xóa activity
+            prisma.activity.delete({
+                where: {
+                    id: id
+                }
+            }),
+            // Lệnh 2: Cập nhật lại tổng KM trong Registration (Trừ đi khoảng cách của bài vừa xóa)
+            prisma.registration.update({
+                where: {
+                    id: activity.registrationId
+                },
+                data: {
+                    totalDistance: {
+                        decrement: activity.distance
+                    }
+                }
+            })
+        ]);
 
-        return NextResponse.json({ message: 'Xóa kết quả thành công' }, { status: 200 });
+        return NextResponse.json({ message: 'Xóa kết quả và cập nhật thành tích thành công' }, { status: 200 });
         
     } catch (error) {
         console.error("Lỗi khi xóa kết quả:", error);
