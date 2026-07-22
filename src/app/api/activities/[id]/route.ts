@@ -8,7 +8,7 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        // 1. KIỂM TRA ĐĂNG NHẬP (Chặn những kẻ chưa đăng nhập)
+        // 1. KIỂM TRA ĐĂNG NHẬP
         const session = await getServerSession(authOptions);
         if (!session || !session.user?.email) {
             return NextResponse.json({ error: 'Vui lòng đăng nhập để thực hiện' }, { status: 401 });
@@ -25,24 +25,34 @@ export async function DELETE(
             include: {
                 registration: {
                     include: {
-                        user: true // Lấy thông tin user (email) để đối chiếu
+                        user: true 
                     }
                 }
             }
         });
 
-        // Kiểm tra xem kết quả có thực sự tồn tại không
         if (!activity) {
             return NextResponse.json({ error: 'Kết quả không tồn tại hoặc đã bị xóa trước đó' }, { status: 404 });
         }
 
-        // 3. XÁC THỰC QUYỀN SỞ HỮU (Chặn những kẻ định xóa trộm của người khác)
-        // Nếu email của người đang đăng nhập KHÁC với email của người nộp đơn -> Đuổi cổ!
+        // 3. XÁC THỰC QUYỀN SỞ HỮU
         if (activity.registration.user.email !== session.user.email) {
             return NextResponse.json({ error: 'Bạn không có quyền xóa kết quả của vận động viên khác' }, { status: 403 });
         }
 
-        // 4. VƯỢT QUA MỌI KIỂM TRA -> THỰC HIỆN XÓA VÀ TRỪ KM (Dùng Transaction để đảm bảo tính đồng bộ)
+        // ==========================================
+        // XỬ LÝ LÀM TRÒN KHI TRỪ KM
+        // ==========================================
+        const currentTotal = activity.registration.totalDistance || 0;
+        let newTotal = currentTotal - activity.distance;
+        
+        // Đề phòng trường hợp lỗi data làm tổng KM bị âm
+        if (newTotal < 0) newTotal = 0;
+
+        // Làm tròn đúng 2 chữ số sau dấu phẩy trước khi lưu lại
+        const roundedNewTotal = parseFloat(newTotal.toFixed(2));
+
+        // 4. THỰC HIỆN XÓA VÀ CẬP NHẬT
         await prisma.$transaction([
             // Lệnh 1: Xóa activity
             prisma.activity.delete({
@@ -50,15 +60,13 @@ export async function DELETE(
                     id: id
                 }
             }),
-            // Lệnh 2: Cập nhật lại tổng KM trong Registration (Trừ đi khoảng cách của bài vừa xóa)
+            // Lệnh 2: Ghi đè lại tổng KM đã được làm tròn (thay vì dùng decrement)
             prisma.registration.update({
                 where: {
                     id: activity.registrationId
                 },
                 data: {
-                    totalDistance: {
-                        decrement: activity.distance
-                    }
+                    totalDistance: roundedNewTotal // Cập nhật thẳng giá trị mới
                 }
             })
         ]);
