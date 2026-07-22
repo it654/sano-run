@@ -4,18 +4,22 @@ import Navbar from '@/components/layout/Navbar';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import dynamic from 'next/dynamic';
+import EventLeaderboard from '@/components/events/EventLeaderboard';
 
 const JoditEditor = dynamic(() => import('jodit-react'), {
     ssr: false,
     loading: () => <p className="text-gray-400 text-sm p-4 animate-pulse">Đang tải trình soạn thảo...</p>
 });
 
+
 export default function AdminPage() {
-    // [MỚI] Thêm 'settings' vào activeTab
     const [activeTab, setActiveTab] = useState<'registrations' | 'events' | 'settings'>('registrations');
+    
+    // [MỚI] State chuyển đổi giữa bảng Danh sách và Bảng Xếp Hạng
+    const [regViewMode, setRegViewMode] = useState<'list' | 'leaderboard'>('list');
 
     // =================================================================
-    // STATE: CÀI ĐẶT HỆ THỐNG (MỚI)
+    // STATE: CÀI ĐẶT HỆ THỐNG
     // =================================================================
     const [globalSettings, setGlobalSettings] = useState<Record<string, string>>({});
     const [isSavingSetting, setIsSavingSetting] = useState(false);
@@ -35,8 +39,6 @@ export default function AdminPage() {
     const toggleSetting = async (key: string, currentValue: string) => {
         const newValue = currentValue === 'true' ? 'false' : 'true';
         setIsSavingSetting(true);
-        
-        // Cập nhật UI ngay lập tức cho mượt
         setGlobalSettings(prev => ({ ...prev, [key]: newValue }));
 
         try {
@@ -45,10 +47,8 @@ export default function AdminPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ key, value: newValue })
             });
-
             if (!res.ok) {
                 alert('Lỗi khi lưu cài đặt!');
-                // Revert UI nếu lỗi
                 setGlobalSettings(prev => ({ ...prev, [key]: currentValue }));
             }
         } catch (error) {
@@ -87,7 +87,6 @@ export default function AdminPage() {
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [prizesContent, setPrizesContent] = useState('');
     const [rulesContent, setRulesContent] = useState('');
-
     const [selectedDistances, setSelectedDistances] = useState<string>('');
     const editorConfig = useMemo(() => ({
         readonly: false,
@@ -131,7 +130,7 @@ export default function AdminPage() {
     useEffect(() => {
         fetchEvents();
         fetchRegistrations();
-        fetchSettings(); // Gọi thêm fetch settings
+        fetchSettings(); 
     }, []);
 
     const uniqueEventsFilter = ['Tất cả', ...Array.from(new Set(registrationsData.map(item => item.event?.title).filter(Boolean)))];
@@ -145,6 +144,7 @@ export default function AdminPage() {
             'Số BIB': item.bibNumber,
             'Họ và Tên': item.fullName || item.user?.name,
             'Email': item.user?.email,
+            'Giới tính': item.gender === false ? 'Nữ' : 'Nam', // Bổ sung cột giới tính khi xuất Excel
             'Phòng ban': item.department || 'N/A',
             'Giải Chạy': item.event?.title,
             'Cự Ly': item.distance,
@@ -316,7 +316,6 @@ export default function AdminPage() {
                     >
                         Quản Lý Giải Chạy
                     </button>
-                    {/* [MỚI] TAB CÀI ĐẶT */}
                     <button
                         onClick={() => setActiveTab('settings')}
                         className={`pb-3 font-black uppercase text-sm tracking-wider transition-colors ${activeTab === 'settings' ? 'border-b-4 border-[#E32626] text-[#E32626]' : 'text-gray-500 hover:text-gray-800'}`}
@@ -325,7 +324,7 @@ export default function AdminPage() {
                     </button>
                 </div>
 
-                {/* ==================== TAB 3: CÀI ĐẶT HỆ THỐNG (MỚI) ==================== */}
+                {/* ==================== TAB: CÀI ĐẶT HỆ THỐNG ==================== */}
                 {activeTab === 'settings' && (
                     <div className="animate-in fade-in duration-300 max-w-3xl">
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -335,14 +334,11 @@ export default function AdminPage() {
                             </div>
                             
                             <div className="p-6">
-                                {/* Dòng cài đặt ShowResults */}
                                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
                                     <div>
                                         <h3 className="font-bold text-gray-900">Hiển thị Tab Kết Quả (Bảng xếp hạng)</h3>
                                         <p className="text-xs text-gray-500 mt-1">Bật tính năng này sẽ hiển thị tab Kết quả ở trang chi tiết của mọi giải chạy.</p>
                                     </div>
-                                    
-                                    {/* UI Công tắc Toggle (Switch) */}
                                     <button 
                                         type="button"
                                         disabled={isSavingSetting}
@@ -357,83 +353,110 @@ export default function AdminPage() {
                     </div>
                 )}
 
-                {/* ==================== TAB 1: DANH SÁCH ĐĂNG KÝ ==================== */}
+                {/* ==================== TAB: DANH SÁCH ĐĂNG KÝ VÀ BẢNG XẾP HẠNG ==================== */}
                 {activeTab === 'registrations' && (
                     <div className="animate-in fade-in duration-300">
-                        {/* (Code giữ nguyên như cũ) */}
-                        <div className="mb-6 flex flex-col sm:flex-row justify-between gap-4">
-                            <div className="flex items-center gap-4 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
-                                <span className="pl-2 font-bold text-sm text-gray-500">Lọc giải:</span>
+                        {/* Khu vực Filter và Nút chuyển đổi View Mode */}
+                        <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div className="flex items-center gap-4 bg-white p-2 rounded-xl shadow-sm border border-gray-100 w-full md:w-auto">
+                                <span className="pl-2 font-bold text-sm text-gray-500 shrink-0">Lọc giải:</span>
                                 <select
-                                    className="bg-gray-50 border border-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E32626] text-sm"
+                                    className="bg-gray-50 border border-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E32626] text-sm w-full md:w-64"
                                     value={selectedFilterEvent}
                                     onChange={(e) => setSelectedFilterEvent(e.target.value)}
                                 >
                                     {uniqueEventsFilter.map((ev, idx) => <option key={idx} value={ev}>{ev as string}</option>)}
                                 </select>
                             </div>
-                            <button
-                                onClick={handleExportExcel}
-                                className="bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-md transition-colors flex items-center gap-2 text-sm"
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                Xuất Excel ({filteredRegistrations.length})
-                            </button>
-                        </div>
 
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left text-sm text-gray-600">
-                                    <thead className="bg-[#F4F5F7] text-[#2B2D31] uppercase text-xs font-black tracking-wider border-b border-gray-200">
-                                        <tr>
-                                            <th className="px-6 py-4">Mã BIB</th>
-                                            <th className="px-6 py-4">Họ và Tên</th>
-                                            <th className="px-6 py-4">Phòng ban</th>
-                                            <th className="px-6 py-4">Giải Chạy</th>
-                                            <th className="px-6 py-4 text-center">Cự Ly</th>
-                                            <th className="px-6 py-4 text-center">Hoàn thành</th>
-                                            <th className="px-6 py-4 text-right">Thao tác</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {isLoadingRegs ? (
-                                            <tr><td colSpan={7} className="px-6 py-10 text-center text-gray-500">Đang tải dữ liệu...</td></tr>
-                                        ) : filteredRegistrations.length === 0 ? (
-                                            <tr><td colSpan={7} className="px-6 py-10 text-center text-gray-500">Chưa có ai đăng ký giải này.</td></tr>
-                                        ) : (
-                                            filteredRegistrations.map((row) => (
-                                                <tr key={row.id} className="hover:bg-gray-50 transition-colors">
-                                                    <td className="px-6 py-4 font-bold text-gray-900">{row.bibNumber}</td>
-                                                    <td className="px-6 py-4">
-                                                        <span className="font-bold text-[#1e3a8a]">{row.fullName || row.user?.name}</span> <br />
-                                                        <span className="text-[10px] text-gray-400">{row.user?.email}</span>
-                                                    </td>
-                                                    <td className="px-6 py-4 font-medium">{row.department || '-'}</td>
-                                                    <td className="px-6 py-4 font-bold text-gray-700">{row.event?.title}</td>
-                                                    <td className="px-6 py-4 text-center">
-                                                        <span className="bg-gray-100 text-gray-800 px-2.5 py-1 rounded-full font-bold text-[11px]">{row.distance}</span>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-center">
-                                                        <span className="font-black text-[#E32626]">{parseFloat(Number(row.totalDistance || 0).toFixed(2))}</span> km
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right text-xs space-x-4">
-                                                        <button onClick={() => openRegDetails(row)} className="text-blue-500 hover:text-blue-700 font-bold uppercase transition-colors">Chi tiết</button>
-                                                        <button onClick={() => handleDeleteRegistration(row.id)} className="text-red-500 hover:text-red-700 font-bold uppercase transition-colors">Xóa</button>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
+                            <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                                {/* [MỚI] Khối Nút Chuyển Đổi (Toggle) */}
+                                <div className="flex bg-gray-100 p-1.5 rounded-xl border border-gray-200 w-full sm:w-auto">
+                                    <button 
+                                        onClick={() => setRegViewMode('list')}
+                                        className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all ${regViewMode === 'list' ? 'bg-white shadow-sm text-[#E32626]' : 'text-gray-500 hover:text-gray-800'}`}
+                                    >
+                                        📄 Danh sách
+                                    </button>
+                                    <button 
+                                        onClick={() => setRegViewMode('leaderboard')}
+                                        className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all ${regViewMode === 'leaderboard' ? 'bg-white shadow-sm text-[#E32626]' : 'text-gray-500 hover:text-gray-800'}`}
+                                    >
+                                        🏆 Bảng xếp hạng
+                                    </button>
+                                </div>
+
+                                <button
+                                    onClick={handleExportExcel}
+                                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-md transition-colors flex items-center justify-center gap-2 text-sm w-full sm:w-auto shrink-0"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                    Xuất Excel ({filteredRegistrations.length})
+                                </button>
                             </div>
                         </div>
+
+                        {/* RENDER DỰA THEO VIEW MODE ĐÃ CHỌN */}
+                        {regViewMode === 'list' ? (
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-in fade-in">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left text-sm text-gray-600">
+                                        <thead className="bg-[#F4F5F7] text-[#2B2D31] uppercase text-[11px] font-black tracking-wider border-b border-gray-200">
+                                            <tr>
+                                                <th className="px-6 py-4">Mã BIB</th>
+                                                <th className="px-6 py-4">Họ và Tên</th>
+                                                <th className="px-6 py-4 text-center">Giới tính</th>
+                                                <th className="px-6 py-4">Phòng ban</th>
+                                                <th className="px-6 py-4">Giải Chạy</th>
+                                                <th className="px-6 py-4 text-center">Cự Ly</th>
+                                                <th className="px-6 py-4 text-center">Hoàn thành</th>
+                                                <th className="px-6 py-4 text-right">Thao tác</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100">
+                                            {isLoadingRegs ? (
+                                                <tr><td colSpan={8} className="px-6 py-10 text-center text-gray-500">Đang tải dữ liệu...</td></tr>
+                                            ) : filteredRegistrations.length === 0 ? (
+                                                <tr><td colSpan={8} className="px-6 py-10 text-center text-gray-500">Chưa có ai đăng ký giải này.</td></tr>
+                                            ) : (
+                                                filteredRegistrations.map((row) => (
+                                                    <tr key={row.id} className="hover:bg-gray-50 transition-colors">
+                                                        <td className="px-6 py-4 font-bold text-gray-900">{row.bibNumber}</td>
+                                                        <td className="px-6 py-4">
+                                                            <span className="font-bold text-[#1e3a8a]">{row.fullName || row.user?.name}</span> <br />
+                                                            <span className="text-[10px] text-gray-400">{row.user?.email}</span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-center font-bold">
+                                                            {row.gender === false ? <span className="text-pink-500 bg-pink-50 px-2 py-0.5 rounded">Nữ</span> : <span className="text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Nam</span>}
+                                                        </td>
+                                                        <td className="px-6 py-4 font-medium">{row.department || '-'}</td>
+                                                        <td className="px-6 py-4 font-bold text-gray-700">{row.event?.title}</td>
+                                                        <td className="px-6 py-4 text-center">
+                                                            <span className="bg-gray-100 text-gray-800 px-2.5 py-1 rounded-full font-bold text-[11px]">{row.distance}</span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-center">
+                                                            <span className="font-black text-[#E32626]">{parseFloat(Number(row.totalDistance || 0).toFixed(2))}</span> km
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right text-xs space-x-4">
+                                                            <button onClick={() => openRegDetails(row)} className="text-blue-500 hover:text-blue-700 font-bold uppercase transition-colors">Chi tiết</button>
+                                                            <button onClick={() => handleDeleteRegistration(row.id)} className="text-red-500 hover:text-red-700 font-bold uppercase transition-colors">Xóa</button>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        ) : (
+                            <EventLeaderboard data={filteredRegistrations} />
+                        )}
                     </div>
                 )}
 
-                {/* ==================== TAB 2: QUẢN LÝ GIẢI CHẠY ==================== */}
+                {/* ==================== TAB: QUẢN LÝ GIẢI CHẠY ==================== */}
                 {activeTab === 'events' && (
                     <div className="animate-in fade-in duration-300">
-                        {/* (Code giữ nguyên như cũ) */}
                         <div className="mb-6 flex justify-end">
                             <button
                                 onClick={openCreateModal}
@@ -526,7 +549,7 @@ export default function AdminPage() {
                 )}
             </main>
 
-            {/* MODAL THÊM/SỬA GIẢI CHẠY (Code Modal giữ nguyên như cũ) */}
+            {/* MODAL THÊM/SỬA GIẢI CHẠY */}
             {isEventModalOpen && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
@@ -655,7 +678,7 @@ export default function AdminPage() {
                 </div>
             )}
 
-            {/* MODAL CHI TIẾT ĐƠN ĐĂNG KÝ (Giữ nguyên như cũ) */}
+            {/* MODAL CHI TIẾT ĐƠN ĐĂNG KÝ */}
             {isRegModalOpen && selectedReg && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
@@ -674,7 +697,7 @@ export default function AdminPage() {
                                     <div><span className="text-gray-500 block text-xs mb-1">Họ và tên</span><span className="font-bold text-gray-900">{selectedReg.fullName || selectedReg.user?.name}</span></div>
                                     <div><span className="text-gray-500 block text-xs mb-1">Email</span><span className="font-medium text-gray-800">{selectedReg.user?.email}</span></div>
                                     <div><span className="text-gray-500 block text-xs mb-1">Phòng ban</span><span className="font-medium text-gray-800">{selectedReg.department || 'N/A'}</span></div>
-                                    <div><span className="text-gray-500 block text-xs mb-1">Mã BIB</span><span className="font-black text-[#1e3a8a] bg-blue-50 px-2 py-1 rounded">{selectedReg.bibNumber}</span></div>
+                                    <div><span className="text-gray-500 block text-xs mb-1">Giới tính</span><span className="font-bold">{selectedReg.gender === false ? 'Nữ' : 'Nam'}</span></div>
                                 </div>
                             </div>
                             <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100 shrink-0">

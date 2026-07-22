@@ -59,7 +59,7 @@ model Registration {
   // ĐÃ XÓA DÒNG employeeId Ở ĐÂY
   department    String?    
   distance      String?    
-  
+  gender        Boolean?
   bibNumber     String     @unique 
   totalDistance Float      @default(0.0) 
   

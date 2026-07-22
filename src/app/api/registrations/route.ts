@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     
     // Đã bỏ employeeId
-    const { eventId, fullName, department, distance } = body;
+    const { eventId, fullName, department, distance,gender } = body;
 
     if (!eventId || !fullName || !department || !distance) {
       return NextResponse.json({ error: 'Vui lòng điền đầy đủ thông tin bắt buộc (*)' }, { status: 400 });
@@ -44,6 +44,7 @@ export async function POST(request: Request) {
         fullName,
         department,
         distance,
+        gender: gender,
         bibNumber: randomBib,
       }
     });
