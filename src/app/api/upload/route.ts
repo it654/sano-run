@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-const IMGBB_API_KEY="5a910c8840faf1618125742ee783062c"
+const IMGBB_API_KEY="c501855dda25f70b12dbe5a362500755"
 export async function POST(request: Request) {
   try {
     // Lấy file từ request của Client

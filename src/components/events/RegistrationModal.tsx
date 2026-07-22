@@ -8,18 +8,19 @@ interface RegistrationModalProps {
   onClose: () => void;
   eventTitle: string;
   eventId: string;
-  eventDistances: string; // Bổ sung prop nhận chuỗi cự ly từ DB (VD: "5KM, 10KM")
+  eventDistances: string; 
 }
 
 export default function RegistrationModal({ isOpen, onClose, eventTitle, eventId, eventDistances }: RegistrationModalProps) {
   const { data: session } = useSession();
 
-  // Tách chuỗi cự ly thành mảng để render. VD: "5KM, 10KM" -> ['5KM', '10KM']
+  // Tách chuỗi cự ly thành mảng để render
   const distanceList = eventDistances ? eventDistances.split(',').map(d => d.trim()).filter(Boolean) : [];
 
   const [formData, setFormData] = useState({
     fullName: '',
     department: '',
+    gender: true, // [MỚI] Thêm state giới tính (Mặc định: true = Nam)
     distance: '',
     healthCommit: false,
   });
@@ -36,6 +37,7 @@ export default function RegistrationModal({ isOpen, onClose, eventTitle, eventId
       setFormData({
         fullName: session?.user?.name || '',
         department: '',
+        gender: true, // Reset về mặc định là Nam
         distance: '',
         healthCommit: false,
       });
@@ -71,7 +73,7 @@ export default function RegistrationModal({ isOpen, onClose, eventTitle, eventId
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           eventId,
-          ...formData
+          ...formData // Payload giờ đây sẽ tự động gửi kèm biến gender: true/false
         })
       });
 
@@ -118,8 +120,9 @@ export default function RegistrationModal({ isOpen, onClose, eventTitle, eventId
               )}
 
               <form onSubmit={handleSubmit}>
+                {/* [MỚI] Tái cấu trúc Grid để chứa 3 trường */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-                  <div>
+                  <div className="sm:col-span-2">
                     <label className="block text-xs font-bold text-[#2B2D31] mb-1.5">Họ và tên <span className="text-red-500">*</span></label>
                     <input 
                       type="text" 
@@ -130,6 +133,20 @@ export default function RegistrationModal({ isOpen, onClose, eventTitle, eventId
                       onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                     />
                   </div>
+                  
+                  <div>
+                    <label className="block text-xs font-bold text-[#2B2D31] mb-1.5">Giới tính <span className="text-red-500">*</span></label>
+                    <select 
+                      required 
+                      className="w-full px-4 py-2.5 text-sm bg-[#F4F5F7] border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E32626]/50 focus:bg-white transition-colors"
+                      value={formData.gender ? "true" : "false"}
+                      onChange={(e) => setFormData({...formData, gender: e.target.value === "true"})}
+                    >
+                      <option value="true">Nam</option>
+                      <option value="false">Nữ</option>
+                    </select>
+                  </div>
+
                   <div>
                     <label className="block text-xs font-bold text-[#2B2D31] mb-1.5">Phòng ban <span className="text-red-500">*</span></label>
                     <select 
@@ -147,7 +164,6 @@ export default function RegistrationModal({ isOpen, onClose, eventTitle, eventId
                       <option value="Attack">Attack</option>
                       <option value="Wevic">Wevic</option>
                       <option value="HR">Nhân sự</option>
-      
                     </select>
                   </div>
                 </div>
