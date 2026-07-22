@@ -124,3 +124,9 @@ model Activity {
   
   createdAt      DateTime     @default(now())
 }
+
+// Bảng lưu các cấu hình chung của hệ thống (Bật/tắt tính năng)
+model SystemSetting {
+  key   String @id     // Ví dụ: "SHOW_RESULTS_TAB"
+  value String         // Ví dụ: "true" hoặc "false"
+}

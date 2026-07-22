@@ -168,7 +168,7 @@ export default function ProfilePage() {
                   {myRegistrations.map(reg => (
                     <li key={reg.id} className="bg-blue-50 p-3 rounded-lg border border-blue-100">
                       <p className="font-bold text-[#1e3a8a] text-sm">{reg.event.title}</p>
-                      <p className="text-xs text-gray-600 mt-1">Đã chạy: <span className="font-bold text-green-600">{reg.totalDistance} km</span></p>
+                     <p className="text-xs text-gray-600 mt-1">Đã chạy: <span className="font-bold text-green-600">{parseFloat(Number(reg.totalDistance || 0).toFixed(2))} km</span></p>
                     </li>
                   ))}
                 </ul>

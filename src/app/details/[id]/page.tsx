@@ -26,6 +26,26 @@ export default function EventDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [timeLeft, setTimeLeft] = useState({ days: '00', hours: '00', minutes: '00', seconds: '00' });
     const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    // [MỚI] State lưu cấu hình hiển thị tab kết quả từ Admin
+    const [globalShowResults, setGlobalShowResults] = useState(false);
+
+    // [MỚI] Fetch cài đặt hệ thống
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await fetch('/api/settings');
+                if (res.ok) {
+                    const data = await res.json();
+                    // Kiểm tra xem Admin đang bật (true) hay tắt (false)
+                    setGlobalShowResults(data['SHOW_RESULTS_TAB'] === 'true');
+                }
+            } catch (error) {
+                console.error('Lỗi khi tải cài đặt:', error);
+            }
+        };
+        fetchSettings();
+    }, []);
 
     useEffect(() => {
         if (!eventId) return;
@@ -208,10 +228,6 @@ export default function EventDetailPage() {
                                         </div>
 
                                     </div>
-                                    {/* <div className="bg-[#2B2D31] text-white px-5 py-2.5 rounded-full font-bold text-xs md:text-sm flex items-center justify-center gap-2 w-full max-w-[320px] text-center leading-tight mt-2">
-                                        <svg className="w-6 h-6 bg-white text-black rounded-full p-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
-                                        Hoàn thành cuộc đua với <br />một hoặc nhiều hoạt động
-                                    </div> */}
                                 </div>
                             </div>
                         </div>
@@ -221,14 +237,13 @@ export default function EventDetailPage() {
                 {/* 2 CỘT NỘI DUNG CHI TIẾT & SIDEBAR */}
                 <div className="flex flex-col lg:flex-row gap-8">
 
-                    {/* CỘT TRÁI: Truyền showResults vào EventDetailTabs. */}
-                    {/* Thuộc tính lg:w-2/3 chỉ áp dụng khi có Sidebar bên phải. Nếu sự kiện CLOSED, nó bung ra Full-width */}
+                    {/* CỘT TRÁI: Truyền globalShowResults vào EventDetailTabs. */}
                     <article className={`w-full ${!isEventClosed ? 'lg:w-2/3' : ''} transition-all duration-500`}>
                         <div id="gioi-thieu" className="scroll-mt-32">
                             <EventDetailTabs
                                 eventId={eventData.id}
                                 eventData={eventData}
-                                showResults={false}
+                                showResults={globalShowResults} // [ĐÃ SỬA] Nhận giá trị động từ Admin
                             />
                         </div>
                     </article>
