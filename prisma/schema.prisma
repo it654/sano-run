@@ -54,7 +54,7 @@ model Registration {
   user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   eventId       String
   event         Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  
+  isWinner      Int        @default(0)
   fullName      String?    
   // ĐÃ XÓA DÒNG employeeId Ở ĐÂY
   department    String?    
